@@ -1,6 +1,12 @@
 # SpeakForge AI - System Architecture
 
-## High-Level Architecture
+## Purpose
+
+This document defines the major components of the system and explains how they interact to deliver AI-powered speaking evaluation.
+
+---
+
+# High-Level Architecture
 
 ```mermaid
 flowchart LR
@@ -9,7 +15,7 @@ subgraph Client
 A[React Frontend]
 end
 
-subgraph Server
+subgraph Backend
 B[Express API]
 end
 
@@ -17,107 +23,156 @@ subgraph Database
 C[(MongoDB Atlas)]
 end
 
-subgraph AI
-D[Whisper]
-E[GPT]
+subgraph AI Services
+D[OpenAI Whisper]
+E[OpenAI GPT]
 end
 
-A -->|Upload Audio| B
-B --> C
-B --> D
-D --> E
-E --> B
-B -->|Feedback| A
+A -->|HTTPS Requests| B
 
+B -->|Read / Write| C
+
+B -->|Audio File| D
+
+D -->|Transcript| B
+
+B -->|Transcript| E
+
+E -->|Evaluation JSON| B
+
+B -->|Response| A
 ```
 
-------------------------------------------------------------
+---
 
-## Frontend Responsibilities
+# System Components
+
+## 1. React Frontend
+
+Responsibilities
 
 - User Authentication
 - Dashboard
-- Daily Speaking Challenge
+- Daily Challenge
 - Audio Recording
 - Upload Audio
 - Display AI Feedback
-- Progress Tracking
+- History
+- Progress Dashboard
 
-------------------------------------------------------------
+Input
 
-## Backend Responsibilities
+- User Interaction
+
+Output
+
+- API Requests
+
+---
+
+## 2. Express Backend
+
+Responsibilities
 
 - Authentication
 - API Validation
-- Receive Audio
-- Store User Data
-- Call Whisper API
-- Call GPT API
-- Save AI Results
-- Return Response
+- Business Logic
+- File Upload
+- AI Integration
+- Database Operations
 
-------------------------------------------------------------
+Input
 
-## Database Responsibilities
+- Frontend Requests
 
-Collections
+Output
+
+- JSON Responses
+
+---
+
+## 3. MongoDB Atlas
+
+Responsibilities
+
+Store:
 
 - Users
 - Challenges
-- SpeakingSessions
-- Feedback
+- Speaking Sessions
+- AI Feedback
+- Streak Information
 
-------------------------------------------------------------
+---
 
-## AI Layer
+## 4. OpenAI Whisper
+
+Purpose
+
+Convert uploaded speech into text.
+
+Input
+
+Audio File
+
+Output
+
+Transcript
+
+---
+
+## 5. OpenAI GPT
+
+Purpose
+
+Evaluate transcript.
+
+Produces
+
+- Grammar Score
+- Fluency Score
+- Vocabulary Score
+- Confidence Feedback
+- Improvement Suggestions
+
+---
+
+# Overall Execution
+
+User
+
+↓
+
+Frontend
+
+↓
+
+Backend
+
+↓
 
 Whisper
 
-Input:
-Audio File
+↓
 
-Output:
 Transcript
 
 ↓
 
 GPT
 
-Input:
-Transcript
+↓
 
-Output:
+Evaluation
 
-- Grammar Score
-- Fluency Score
-- Pronunciation Suggestions
-- Vocabulary Score
-- Confidence Feedback
+↓
 
-------------------------------------------------------------
+MongoDB
 
-## Request Flow
+↓
 
-1. User logs in.
+Frontend
 
-2. User receives today's challenge.
+↓
 
-3. User records audio.
-
-4. Audio uploaded to backend.
-
-5. Backend stores audio temporarily.
-
-6. Backend sends audio to Whisper.
-
-7. Whisper returns transcript.
-
-8. Backend sends transcript to GPT.
-
-9. GPT returns evaluation.
-
-10. Backend stores evaluation.
-
-11. Frontend fetches results.
-
-12. Dashboard updates.
+User
